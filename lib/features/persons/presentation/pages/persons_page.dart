@@ -22,7 +22,6 @@ class PersonsPage extends ConsumerStatefulWidget {
 class _PersonsPageState extends ConsumerState<PersonsPage> {
   SubInstance? _subInstance;
   Instance? _instance;
-  PersonType? _filterType;
 
   @override
   void initState() {
@@ -80,178 +79,68 @@ class _PersonsPageState extends ConsumerState<PersonsPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Filter bar
-          if (_instance != null) _buildFilterBar(),
-
-          // Persons list
-          Expanded(
-            child: personsAsync.when(
-              data: (persons) {
-                final filteredPersons = _filterType != null
-                    ? persons.where((p) => p.type == _filterType).toList()
-                    : persons;
-
-                if (filteredPersons.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.people, size: 64, color: Colors.grey),
-                        const SizedBox(height: 16),
-                        Text(
-                          _filterType != null
-                              ? 'Aucun ${_filterType == PersonType.etudiant ? 'étudiant' : 'employé'} dans "${_subInstance?.nom ?? "cette sous-instance"}"'
-                              : 'Aucune personne dans "${_subInstance?.nom ?? "cette sous-instance"}"',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Appuyez sur le bouton + pour enregistrer votre première personne',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: filteredPersons.length,
-                  itemBuilder: (context, index) {
-                    final person = filteredPersons[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: PersonCard(
-                        person: person,
-                        onTap: () => _navigateToEditPerson(person),
-                        onDelete: () => _deletePerson(person),
-                      ),
-                    );
-                  },
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error, size: 64, color: Colors.red),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Erreur: $error',
-                      style: const TextStyle(color: Colors.red),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+      body: personsAsync.when(
+        data: (persons) {
+          if (persons.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.people, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Aucune personne dans "${_subInstance?.nom ?? "cette sous-instance"}"',
+                    style: const TextStyle(fontSize: 18, color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Appuyez sur le bouton + pour enregistrer votre première personne',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
               ),
-            ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: persons.length,
+            itemBuilder: (context, index) {
+              final person = persons[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: PersonCard(
+                  person: person,
+                  onTap: () => _navigateToEditPerson(person),
+                  onDelete: () => _deletePerson(person),
+                ),
+              );
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text(
+                'Erreur: $error',
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToAddPerson(),
         backgroundColor: const Color(0xFFCA1B49),
         child: const Icon(Icons.add, color: Colors.white),
       ),
-    );
-  }
-
-  Widget _buildFilterBar() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Type d\'instance: ${_instance!.nom}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFFCA1B49),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildFilterChip(
-                  'Tous',
-                  null,
-                  Icons.people,
-                  Colors.grey,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildFilterChip(
-                  'Étudiants',
-                  PersonType.etudiant,
-                  Icons.school,
-                  const Color(0xFF4CAF50),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildFilterChip(
-                  'Employés',
-                  PersonType.employe,
-                  Icons.business,
-                  const Color(0xFF2196F3),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(
-    String label,
-    PersonType? type,
-    IconData icon,
-    Color color,
-  ) {
-    final isSelected = _filterType == type;
-
-    return FilterChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: isSelected ? Colors.white : color),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.white : color,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ],
-      ),
-      selected: isSelected,
-      onSelected: (selected) {
-        setState(() {
-          _filterType = selected ? type : null;
-        });
-      },
-      backgroundColor: Colors.white,
-      selectedColor: color,
-      checkmarkColor: Colors.white,
-      side: BorderSide(color: color),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
   }
 
@@ -357,11 +246,7 @@ class _PersonsPageState extends ConsumerState<PersonsPage> {
           .read(personRepositoryProvider)
           .getPersonsBySubInstance(widget.subInstanceId);
 
-      final filteredPersons = _filterType != null
-          ? persons.where((p) => p.type == _filterType).toList()
-          : persons;
-
-      if (filteredPersons.isEmpty) {
+      if (persons.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -378,9 +263,9 @@ class _PersonsPageState extends ConsumerState<PersonsPage> {
 
       String? filePath;
       if (format == 'csv') {
-        filePath = await ExportService.exportToCsv(filteredPersons, fileName);
+        filePath = await ExportService.exportToCsv(persons, fileName);
       } else {
-        filePath = await ExportService.exportToExcel(filteredPersons, fileName);
+        filePath = await ExportService.exportToExcel(persons, fileName);
       }
 
       if (filePath != null) {
