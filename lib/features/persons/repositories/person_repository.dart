@@ -104,8 +104,8 @@ class PersonRepository {
               matricule: person.matricule,
               niveau: person.niveau,
               filiere: person.filiere,
-              photoPath: person.photoPath,
-              dateCreation: person.dateCreation,
+              photoPath: person.safePhotoPath,
+              dateCreation: person.safeDateCreation,
               type: newType,
             );
 
@@ -246,8 +246,8 @@ class PersonRepository {
             'Matricule': person.matricule,
             'Niveau': person.niveau ?? '',
             'Filière': person.filiere ?? '',
-            'Chemin photo': person.photoPath,
-            'Date de création': person.dateCreation.toIso8601String(),
+            'Chemin photo': person.safePhotoPath,
+            'Date de création': person.safeDateCreation.toIso8601String(),
           },
         )
         .toList();
@@ -277,8 +277,8 @@ class PersonRepository {
             'Matricule': person.matricule,
             'Niveau': person.niveau ?? '',
             'Filière': person.filiere ?? '',
-            'Chemin photo': person.photoPath,
-            'Date de création': person.dateCreation.toIso8601String(),
+            'Chemin photo': person.safePhotoPath,
+            'Date de création': person.safeDateCreation.toIso8601String(),
           },
         )
         .toList();

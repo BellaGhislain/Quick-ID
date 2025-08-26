@@ -39,13 +39,13 @@ class Person extends HiveObject {
   String? filiere; // Pour les étudiants
 
   @HiveField(9)
-  String photoPath; // Maintenant obligatoire
+  String? photoPath; // Optionnel pour la migration
 
   @HiveField(10)
-  DateTime dateCreation;
+  DateTime? dateCreation; // Optionnel pour la migration
 
   @HiveField(11)
-  PersonType type;
+  PersonType? type; // Optionnel pour la migration
 
   Person({
     required this.id,
@@ -57,10 +57,10 @@ class Person extends HiveObject {
     required this.matricule,
     this.niveau,
     this.filiere,
-    required this.photoPath,
-    required this.dateCreation,
-    PersonType? type,
-  }) : type = type ?? PersonType.etudiant;
+    this.photoPath,
+    this.dateCreation,
+    this.type,
+  });
 
   Person copyWith({
     int? id,
@@ -104,8 +104,8 @@ class Person extends HiveObject {
       'niveau': niveau,
       'filiere': filiere,
       'photoPath': photoPath,
-      'dateCreation': dateCreation.toIso8601String(),
-      'type': type.name,
+      'dateCreation': dateCreation?.toIso8601String(),
+      'type': type?.name,
     };
   }
 
@@ -120,14 +120,16 @@ class Person extends HiveObject {
       matricule: json['matricule'] as String,
       niveau: json['niveau'] as String?,
       filiere: json['filiere'] as String?,
-      photoPath: json['photoPath'] as String,
-      dateCreation: DateTime.parse(json['dateCreation'] as String),
+      photoPath: json['photoPath'] as String?,
+      dateCreation: json['dateCreation'] != null
+          ? DateTime.parse(json['dateCreation'] as String)
+          : null,
       type: json.containsKey('type')
           ? PersonType.values.firstWhere(
               (e) => e.name == json['type'],
               orElse: () => PersonType.etudiant,
             )
-          : null, // Utilisera la valeur par défaut du constructeur
+          : null,
     );
   }
 
@@ -146,9 +148,14 @@ class Person extends HiveObject {
   int get hashCode => id.hashCode;
 
   // Getters pour faciliter l'accès aux champs selon le type
-  bool get isEtudiant => type == PersonType.etudiant;
-  bool get isEmploye => type == PersonType.employe;
+  bool get isEtudiant => (type ?? PersonType.etudiant) == PersonType.etudiant;
+  bool get isEmploye => (type ?? PersonType.employe) == PersonType.employe;
 
   // Titre affiché selon le type
   String get typeDisplayName => isEtudiant ? 'Étudiant' : 'Employé';
+
+  // Getters sécurisés avec valeurs par défaut
+  String get safePhotoPath => photoPath ?? '/default/photo.jpg';
+  DateTime get safeDateCreation => dateCreation ?? DateTime.now();
+  PersonType get safeType => type ?? PersonType.etudiant;
 }
