@@ -265,7 +265,7 @@ class _PersonsPageState extends ConsumerState<PersonsPage> {
 
   Future<void> _deletePerson(Person person) async {
     final confirmed = await ModalService.showConfirmationDialog(
-      context,
+      context: context,
       title: 'Confirmer la suppression',
       content:
           'Êtes-vous sûr de vouloir supprimer ${person.prenom} ${person.nom} ?',

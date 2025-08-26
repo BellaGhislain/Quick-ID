@@ -108,7 +108,86 @@ class ExportService {
         content: content,
       );
     } catch (e) {
-      print('Erreur export instance: $e');
+      print('Erreur export: $e');
+      return null;
+    }
+  }
+
+  /// Exporte une liste de personnes en CSV
+  static Future<String?> exportToCsv(
+    List<dynamic> persons,
+    String fileName,
+  ) async {
+    try {
+      final exportDir = await getExportDirectory();
+      final filePath = '$exportDir/$fileName.csv';
+
+      if (persons.isEmpty) {
+        return null;
+      }
+
+      // Créer les en-têtes CSV
+      final headers = [
+        'ID',
+        'ID Sous-instance',
+        'Nom',
+        'Prénom',
+        'Structure',
+        'Fonction',
+        'Matricule',
+        'Niveau',
+        'Filière',
+        'Type',
+        'Date de création',
+      ];
+
+      // Convertir les personnes en lignes CSV
+      final csvData = <List<dynamic>>[];
+      csvData.add(headers);
+
+      for (final person in persons) {
+        final personMap = person is Map<String, dynamic>
+            ? person
+            : person.toJson();
+
+        final row = [
+          personMap['id'] ?? '',
+          personMap['subInstanceId'] ?? '',
+          personMap['nom'] ?? '',
+          personMap['prenom'] ?? '',
+          personMap['structure'] ?? '',
+          personMap['fonction'] ?? '',
+          personMap['matricule'] ?? '',
+          personMap['niveau'] ?? '',
+          personMap['filiere'] ?? '',
+          personMap['type'] ?? '',
+          personMap['dateCreation'] ?? '',
+        ];
+        csvData.add(row);
+      }
+
+      final csvString = const ListToCsvConverter().convert(csvData);
+      final file = File(filePath);
+      await file.writeAsString(csvString);
+
+      return filePath;
+    } catch (e) {
+      print('Erreur export CSV: $e');
+      return null;
+    }
+  }
+
+  /// Exporte une liste de personnes en Excel
+  static Future<String?> exportToExcel(
+    List<dynamic> persons,
+    String fileName,
+  ) async {
+    try {
+      // Pour l'instant, on exporte en CSV car le package excel n'est pas configuré
+      // Vous pouvez implémenter l'export Excel ici si nécessaire
+      return await exportToCsv(persons, fileName);
+    } catch (e) {
+      print('Erreur export Excel: $e');
       return null;
     }
   }

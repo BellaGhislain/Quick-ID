@@ -25,6 +25,10 @@ class PersonRepository {
         .toList();
   }
 
+  Future<List<Person>> getPersonsBySubInstance(int subInstanceId) async {
+    return getPersonsBySubInstanceId(subInstanceId);
+  }
+
   Future<List<Person>> getPersonsByInstanceId(int instanceId) async {
     // This would require joining with SubInstance data
     // For now, we'll implement a simpler approach

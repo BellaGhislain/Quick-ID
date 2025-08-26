@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:quick_id/core/services/image_service.dart';
 
 import '../../../../core/providers/app_providers.dart';
-import '../../../instances/models/instance.dart';
 import '../../../sub_instances/models/sub_instance.dart';
 import '../../models/person.dart';
 
@@ -41,7 +40,6 @@ class _AddPersonPageState extends ConsumerState<AddPersonPage> {
 
   // Data for pre-filling
   SubInstance? _subInstance;
-  Instance? _instance;
   PersonType? _selectedType;
 
   @override
@@ -70,13 +68,8 @@ class _AddPersonPageState extends ConsumerState<AddPersonPage> {
         .getSubInstanceById(widget.subInstanceId);
 
     if (subInstance != null) {
-      final instance = await ref
-          .read(instanceRepositoryProvider)
-          .getInstanceById(subInstance.instanceId);
-
       setState(() {
         _subInstance = subInstance;
-        _instance = instance;
       });
 
       // Pre-fill fields based on hierarchy
@@ -302,7 +295,7 @@ class _AddPersonPageState extends ConsumerState<AddPersonPage> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(40),
                 ),
                 child: Icon(icon, size: 40, color: color),
@@ -526,7 +519,7 @@ class _AddPersonPageState extends ConsumerState<AddPersonPage> {
             color: isCompleted
                 ? const Color(0xFFCA1B49)
                 : isActive
-                ? const Color(0xFFCA1B49).withOpacity(0.2)
+                ? const Color(0xFFCA1B49).withValues(alpha: 0.2)
                 : Colors.grey[300],
             borderRadius: BorderRadius.circular(20),
           ),

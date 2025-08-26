@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/instances/presentation/pages/instances_page.dart';
+import '../../features/persons/models/person.dart';
 import '../../features/persons/presentation/pages/add_person_page.dart';
 import '../../features/persons/presentation/pages/edit_person_page.dart';
 import '../../features/persons/presentation/pages/persons_page.dart';
-import '../../features/persons/presentation/pages/select_person_type_page.dart';
 import '../../features/sub_instances/presentation/pages/sub_instances_page.dart';
 import '../constants/app_constants.dart';
 import '../pages/about_page.dart';
@@ -44,7 +44,7 @@ final GoRouter appRouter = GoRouter(
       name: 'addPerson',
       builder: (context, state) {
         final subInstanceId = int.parse(state.pathParameters['subInstanceId']!);
-        final typeParam = state.queryParameters['type'];
+        final typeParam = state.uri.queryParameters['type'];
         PersonType? personType;
         if (typeParam != null) {
           personType = PersonType.values.firstWhere(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -415,7 +417,7 @@ class _EditPersonPageState extends ConsumerState<EditPersonPage> {
             color: isCompleted
                 ? const Color(0xFFCA1B49)
                 : isActive
-                ? const Color(0xFFCA1B49).withOpacity(0.2)
+                ? const Color(0xFFCA1B49).withValues(alpha: 0.2)
                 : Colors.grey[300],
             borderRadius: BorderRadius.circular(20),
           ),
