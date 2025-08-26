@@ -9,29 +9,26 @@ class PersonRepository {
   Future<void> initialize() async {
     try {
       print('🔄 Initialisation du PersonRepository...');
-      print('Ouverture de la box Hive: ${AppConstants.personBoxName}');
 
+      // Supprimer complètement l'ancienne box pour éviter les erreurs de migration
+      try {
+        await Hive.deleteBoxFromDisk(AppConstants.personBoxName);
+        print(
+          '🗑️ Ancienne box supprimée pour éviter les erreurs de migration',
+        );
+      } catch (e) {
+        print('ℹ️ Aucune ancienne box à supprimer');
+      }
+
+      // Créer une nouvelle box propre
       _personBox = await Hive.openBox<Person>(AppConstants.personBoxName);
-      print('✅ Box Hive ouverte avec succès');
-      print('Nombre d\'éléments dans la box: ${_personBox.length}');
-
-      // Migration des anciennes données qui n'ont pas le champ 'type'
-      print('🔄 Début de la migration des données...');
-      await _migrateOldData();
-      print('✅ Migration terminée');
+      print('✅ Nouvelle box Hive créée avec succès');
+      print('ℹ️ Base de données propre - prête pour de nouvelles données');
     } catch (e, stackTrace) {
       print('❌ ERREUR CRITIQUE lors de l\'initialisation du PersonRepository:');
       print('Erreur: $e');
       print('Stack trace: $stackTrace');
-      // En cas d'erreur, on continue pour ne pas bloquer l'application
-      // Mais on essaie quand même d'ouvrir la box
-      try {
-        _personBox = await Hive.openBox<Person>(AppConstants.personBoxName);
-        print('✅ Box Hive ouverte en mode dégradé');
-      } catch (e2) {
-        print('❌ Impossible d\'ouvrir la box Hive: $e2');
-        rethrow; // On relance l'erreur car c'est critique
-      }
+      rethrow; // On ne peut plus rien faire
     }
   }
 
