@@ -199,3 +199,27 @@ Ce projet est sous licence privée. Tous droits réservés.
 ---
 
 **Quick-ID** - Gestion intelligente des identités 🚀
+
+Launching lib\main.dart on Infinix X6525D (wireless) in debug mode...
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+D/FlutterJNI(26371): Beginning load of flutter...
+D/FlutterJNI(26371): flutter (null) was loaded normally!
+I/flutter (26371): [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(62)] Using the Impeller rendering backend (Vulkan).
+Connecting to VM Service at ws://127.0.0.1:51172/7SeI69V5n6Y=/ws
+Connected to the VM Service.
+D/ProfileInstaller(26371): Installing profile for com.example.collectionneur
+I/flutter (26371): 🔄 Initialisation du PersonRepository...
+I/flutter (26371): Ouverture de la box Hive: persons
+I/flutter (26371): ❌ ERREUR CRITIQUE lors de l'initialisation du PersonRepository:
+I/flutter (26371): Erreur: type 'Null' is not a subtype of type 'String' in type cast
+I/flutter (26371): Stack trace: #0 PersonAdapter.read (package:quick_id/features/persons/models/person.g.dart:24:28)
+person.g.dart:24
+I/flutter (26371): #1 BinaryReaderImpl.read (package:hive/src/binary/binary_reader_impl.dart:328:33)
+binary_reader_impl.dart:328
+I/flutter (26371): #2 BinaryReaderImpl.readFrame (package:hive/src/binary/binary_reader_impl.dart:276:26)
+binary_reader_impl.dart:276
+I/flutter (26371): #3 FrameHelper.framesFromBytes (package:hive/src/binary/frame_helper.dart:21:26)
+frame_helper.dart:21
+I/flutter (26371): #4 FrameIoHelper.framesFromFile (package:hive/src/io/frame_io_helper.dart:42:12)
+frame_io_helper.dart:42
+I/flutter (26371): <asynchronous suspension>

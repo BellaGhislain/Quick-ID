@@ -10,7 +10,6 @@ android {
     compileSdk = flutter.compileSdkVersion
     
     // Configuration pour résoudre le problème du NDK
-    ndkVersion = "25.1.8937393" // Version stable du NDK
     
     // Alternative : désactiver le NDK si le problème persiste
     // ndkVersion = null
