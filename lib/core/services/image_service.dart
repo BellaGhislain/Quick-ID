@@ -2,15 +2,42 @@ import 'dart:io';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-
-import '../constants/app_constants.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ImageService {
   static final ImagePicker _picker = ImagePicker();
 
+  /// Vérifie et demande les permissions nécessaires
+  static Future<bool> _checkPermissions() async {
+    if (Platform.isAndroid) {
+      if (await Permission.photos.isGranted ||
+          await Permission.storage.isGranted) {
+        return true;
+      }
+
+      // Android 13 et +
+      if (await Permission.photos.request().isGranted) {
+        return true;
+      }
+
+      // Android < 13
+      if (await Permission.storage.request().isGranted) {
+        return true;
+      }
+
+      return false;
+    }
+    return true; // iOS géré automatiquement
+  }
+
   /// Prendre une photo avec la caméra
   static Future<String?> takePhoto() async {
     try {
+      if (!await _checkPermissions()) {
+        print('Permission refusée pour accéder aux images');
+        return null;
+      }
+
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
         imageQuality: 80,
@@ -31,6 +58,11 @@ class ImageService {
   /// Choisir une image depuis la galerie
   static Future<String?> pickFromGallery() async {
     try {
+      if (!await _checkPermissions()) {
+        print('Permission refusée pour accéder aux images');
+        return null;
+      }
+
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
         imageQuality: 80,
@@ -48,7 +80,23 @@ class ImageService {
     }
   }
 
-  /// Sauvegarde d'une image avec un nom basé sur nom + prénom
+  /// Sauvegarde simple d'une image
+  static Future<String> _saveImage(String sourcePath) async {
+    final imageDir = await _getImageDirectory();
+    if (!await imageDir.exists()) {
+      await imageDir.create(recursive: true);
+    }
+
+    final fileName = 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final targetPath = '${imageDir.path}/$fileName';
+
+    final sourceFile = File(sourcePath);
+    await sourceFile.copy(targetPath);
+
+    return targetPath;
+  }
+
+  /// Sauvegarde d'une image avec nom + prénom
   static Future<String?> savePhotoWithName(
     String sourcePath,
     String nom,
@@ -76,26 +124,18 @@ class ImageService {
     }
   }
 
-  /// Sauvegarde simple d'une image
-  static Future<String> _saveImage(String sourcePath) async {
-    final imageDir = await _getImageDirectory();
-    if (!await imageDir.exists()) {
-      await imageDir.create(recursive: true);
+  /// Retourne le dossier public "Pictures/QuickID"
+  static Future<Directory> _getImageDirectory() async {
+    Directory? directory;
+
+    if (Platform.isAndroid) {
+      directory = Directory('/storage/emulated/0/Pictures/QuickID');
+    } else {
+      directory = await getApplicationDocumentsDirectory();
+      directory = Directory('${directory.path}/QuickID');
     }
 
-    final fileName = 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
-    final targetPath = '${imageDir.path}/$fileName';
-
-    final sourceFile = File(sourcePath);
-    await sourceFile.copy(targetPath);
-
-    return targetPath;
-  }
-
-  /// Récupère le dossier interne de l'application pour les images
-  static Future<Directory> _getImageDirectory() async {
-    final directory = await getApplicationDocumentsDirectory();
-    return Directory('${directory.path}/${AppConstants.imageDirectory}');
+    return directory;
   }
 
   /// Nettoyage du nom de fichier
