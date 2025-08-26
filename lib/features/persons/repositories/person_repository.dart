@@ -8,6 +8,72 @@ class PersonRepository {
 
   Future<void> initialize() async {
     _personBox = await Hive.openBox<Person>(AppConstants.personBoxName);
+
+    // Migration des anciennes données qui n'ont pas le champ 'type'
+    await _migrateOldData();
+  }
+
+  Future<void> _migrateOldData() async {
+    try {
+      final persons = _personBox.values.toList();
+      bool hasChanges = false;
+
+      for (final person in persons) {
+        // Si la personne n'a pas de type défini, on la migre
+        if (person.type == PersonType.etudiant &&
+            person.structure == null &&
+            person.fonction == null &&
+            person.niveau != null &&
+            person.filiere != null) {
+          // C'est probablement un étudiant existant
+          continue; // Déjà correct
+        } else if (person.type == PersonType.employe &&
+            person.niveau == null &&
+            person.filiere == null &&
+            person.structure != null &&
+            person.fonction != null) {
+          // C'est probablement un employé existant
+          continue; // Déjà correct
+        } else {
+          // Déterminer le type basé sur les champs existants
+          PersonType newType;
+          if (person.niveau != null || person.filiere != null) {
+            newType = PersonType.etudiant;
+          } else if (person.structure != null || person.fonction != null) {
+            newType = PersonType.employe;
+          } else {
+            // Par défaut, considérer comme étudiant
+            newType = PersonType.etudiant;
+          }
+
+          // Créer une nouvelle instance avec le bon type
+          final updatedPerson = Person(
+            id: person.id,
+            subInstanceId: person.subInstanceId,
+            nom: person.nom,
+            prenom: person.prenom,
+            structure: person.structure,
+            fonction: person.fonction,
+            matricule: person.matricule,
+            niveau: person.niveau,
+            filiere: person.filiere,
+            photoPath: person.photoPath,
+            dateCreation: person.dateCreation,
+            type: newType,
+          );
+
+          await _personBox.put(person.id, updatedPerson);
+          hasChanges = true;
+        }
+      }
+
+      if (hasChanges) {
+        print('Migration des données terminée avec succès');
+      }
+    } catch (e) {
+      print('Erreur lors de la migration: $e');
+      // En cas d'erreur, on continue pour ne pas bloquer l'application
+    }
   }
 
   Future<void> close() async {
@@ -100,11 +166,12 @@ class PersonRepository {
             'ID Sous-instance': person.subInstanceId,
             'Nom': person.nom,
             'Prénom': person.prenom,
-            'Structure': person.structure,
-            'Fonction': person.fonction,
+            'Type': person.typeDisplayName,
+            'Structure': person.structure ?? '',
+            'Fonction': person.fonction ?? '',
             'Matricule': person.matricule,
-            'Niveau': person.niveau,
-            'Filière': person.filiere,
+            'Niveau': person.niveau ?? '',
+            'Filière': person.filiere ?? '',
             'Chemin photo': person.photoPath,
             'Date de création': person.dateCreation.toIso8601String(),
           },
@@ -130,11 +197,12 @@ class PersonRepository {
             'ID Sous-instance': person.subInstanceId,
             'Nom': person.nom,
             'Prénom': person.prenom,
-            'Structure': person.structure,
-            'Fonction': person.fonction,
+            'Type': person.typeDisplayName,
+            'Structure': person.structure ?? '',
+            'Fonction': person.fonction ?? '',
             'Matricule': person.matricule,
-            'Niveau': person.niveau,
-            'Filière': person.filiere,
+            'Niveau': person.niveau ?? '',
+            'Filière': person.filiere ?? '',
             'Chemin photo': person.photoPath,
             'Date de création': person.dateCreation.toIso8601String(),
           },

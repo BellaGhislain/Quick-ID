@@ -119,10 +119,8 @@ class ExportService {
     String fileName,
   ) async {
     try {
-      final exportDir = await getExportDirectory();
-      final filePath = '$exportDir/$fileName.csv';
-
       if (persons.isEmpty) {
+        print('Aucune donnée à exporter');
         return null;
       }
 
@@ -132,12 +130,12 @@ class ExportService {
         'ID Sous-instance',
         'Nom',
         'Prénom',
+        'Type',
         'Structure',
         'Fonction',
         'Matricule',
         'Niveau',
         'Filière',
-        'Type',
         'Date de création',
       ];
 
@@ -155,22 +153,32 @@ class ExportService {
           personMap['subInstanceId'] ?? '',
           personMap['nom'] ?? '',
           personMap['prenom'] ?? '',
+          personMap['type'] ?? personMap['typeDisplayName'] ?? '',
           personMap['structure'] ?? '',
           personMap['fonction'] ?? '',
           personMap['matricule'] ?? '',
           personMap['niveau'] ?? '',
           personMap['filiere'] ?? '',
-          personMap['type'] ?? '',
           personMap['dateCreation'] ?? '',
         ];
         csvData.add(row);
       }
 
       final csvString = const ListToCsvConverter().convert(csvData);
-      final file = File(filePath);
-      await file.writeAsString(csvString);
 
-      return filePath;
+      // Utiliser DownloadService pour sauvegarder dans le dossier de téléchargements
+      final filePath = await DownloadService.saveTextToDownloads(
+        fileName: '$fileName.csv',
+        content: csvString,
+      );
+
+      if (filePath != null) {
+        print('Fichier CSV exporté avec succès: $filePath');
+        return filePath;
+      } else {
+        print('Erreur: Impossible de sauvegarder le fichier CSV');
+        return null;
+      }
     } catch (e) {
       print('Erreur export CSV: $e');
       return null;

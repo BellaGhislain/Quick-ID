@@ -376,21 +376,50 @@ class _PersonsPageState extends ConsumerState<PersonsPage> {
       final fileName =
           '${_subInstance?.nom ?? 'personnes'}_${DateTime.now().millisecondsSinceEpoch}';
 
+      String? filePath;
       if (format == 'csv') {
-        await ExportService.exportToCsv(filteredPersons, fileName);
+        filePath = await ExportService.exportToCsv(filteredPersons, fileName);
       } else {
-        await ExportService.exportToExcel(filteredPersons, fileName);
+        filePath = await ExportService.exportToExcel(filteredPersons, fileName);
       }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Données exportées en $format avec succès'),
-            backgroundColor: const Color(0xFFCA1B49),
-          ),
-        );
+      if (filePath != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Données exportées en $format avec succès'),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Fichier: ${filePath.split('/').last}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  Text(
+                    'Chemin: $filePath',
+                    style: const TextStyle(fontSize: 10),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFFCA1B49),
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erreur: Impossible d\'exporter en $format'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } catch (e) {
+      print('Erreur lors de l\'export: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
