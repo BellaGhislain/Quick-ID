@@ -17,6 +17,7 @@ class AppConstants {
   static const String personsRoute = '/persons';
   static const String addPersonRoute = '/add-person';
   static const String editPersonRoute = '/edit-person';
+  static const String selectPersonTypeRoute = '/select-person-type';
 
   // Form steps
   static const int personalInfoStep = 0;

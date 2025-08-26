@@ -1,243 +1,201 @@
-# Quick ID
+# Quick-ID - Application de gestion d'identités
 
-Application de gestion d'identités avec stockage offline-first.
+## 🎯 Description
 
-## 🚀 Fonctionnalités
+Quick-ID est une application Flutter de gestion d'identités avec stockage offline-first, conçue pour gérer des structures organisationnelles hiérarchiques. L'application distingue maintenant deux types de personnes : **Étudiants** et **Employés**.
 
-### Gestion des Instances
-- Créer, modifier et supprimer des instances principales (établissements, entreprises, ONG)
-- Navigation vers les sous-instances d'une instance
-- Export des données par instance (JSON et CSV)
+## 🏗️ Architecture des données
 
-### Gestion des Sous-Instances
-- Créer, modifier et supprimer des sous-instances (salles de classe, départements, bureaux)
-- Navigation vers les personnes d'une sous-instance
-- Export des données par sous-instance (JSON et CSV)
+### Structure hiérarchique
 
-### Gestion des Personnes
-- Formulaire multi-étapes pour l'enregistrement des personnes
-- Capture de photos avec la caméra ou sélection depuis la galerie
-- Stockage des informations personnelles, structure, fonction, matricule, niveau, filière
-- Export des données par personne (JSON et CSV)
+1. **Instances** - Niveau principal (ex: entreprises, écoles, organisations)
+2. **Sub-Instances** - Sous-niveaux (ex: départements, filiales, classes)
+3. **Persons** - Personnes avec informations détaillées selon le type
 
-### Export et Import
-- Export global de toutes les données
-- Export par instance
-- Export par sous-instance
-- Formats supportés : JSON et CSV
-- Stockage local des fichiers d'export
+### Types de personnes
 
-## 🏗️ Architecture
+#### 🎓 **Étudiants** (pour les écoles)
 
-### Structure du Projet
-```
-lib/
-├── core/                    # Utilitaires communs
-│   ├── constants/          # Constantes de l'application
-│   ├── navigation/         # Configuration du routeur
-│   ├── providers/          # Providers Riverpod
-│   ├── services/           # Services (export, images)
-│   └── theme/              # Thèmes de l'application
-├── features/               # Fonctionnalités par domaine
-│   ├── instances/          # Gestion des instances
-│   ├── sub_instances/      # Gestion des sous-instances
-│   └── persons/            # Gestion des personnes
-└── main.dart               # Point d'entrée de l'application
-```
+- **Champs obligatoires :**
+  - Nom et Prénom
+  - Matricule
+  - Filière
+- **Champs pré-remplis :**
+  - Niveau (automatiquement rempli avec le nom de la sub-instance)
 
-### Technologies Utilisées
-- **Flutter 3.x** avec Material 3
-- **GoRouter** pour la navigation
+#### 💼 **Employés** (pour les entreprises)
+
+- **Champs obligatoires :**
+  - Nom et Prénom
+  - Fonction
+  - Matricule
+- **Champs pré-remplis :**
+  - Structure (automatiquement rempli avec le nom de la sub-instance)
+
+## ✨ Fonctionnalités principales
+
+### 🔍 **Sélection intelligente du type**
+
+- Choix entre Étudiant et Employé lors de l'ajout d'une personne
+- Interface adaptée selon le type sélectionné
+- Pré-remplissage automatique des champs appropriés
+
+### 📱 **Interface adaptative**
+
+- Formulaires différents selon le type de personne
+- Validation adaptée aux champs obligatoires
+- Affichage des informations pertinentes
+
+### 🖼️ **Gestion des photos**
+
+- Photo obligatoire pour tous les types
+- Prise de photo intégrée
+- Sélection depuis la galerie
+- Stockage local optimisé
+
+### 🔍 **Filtrage et recherche**
+
+- Filtrage par type de personne
+- Vue d'ensemble claire avec badges de type
+- Export sélectif selon les filtres
+
+### 📊 **Export des données**
+
+- Export en CSV
+- Export en Excel
+- Filtrage par type lors de l'export
+
+## 🛠️ Technologies utilisées
+
+- **Flutter** avec SDK 3.8.1
 - **Riverpod** pour la gestion d'état
-- **Hive** pour le stockage local offline-first
-- **Image Picker** pour la capture de photos
-- **Path Provider** pour l'accès aux fichiers
+- **Hive** pour la base de données locale
+- **Go Router** pour la navigation
+- **Image Picker** pour la gestion des photos
 
-## 📱 Installation
+## 🚀 Installation et utilisation
 
 ### Prérequis
-- Flutter SDK 3.x
-- Dart SDK
-- Android Studio / VS Code
-- Émulateur Android ou appareil physique
 
-### Étapes d'Installation
+- Flutter SDK 3.8.1+
+- Dart SDK compatible
 
-1. **Cloner le projet**
-   ```bash
-   git clone <repository-url>
-   cd collectionneur
-   ```
+### Installation
 
-2. **Installer les dépendances**
-   ```bash
-   flutter pub get
-   ```
+```bash
+# Cloner le projet
+git clone [url-du-projet]
 
-3. **Générer le code (IMPORTANT !)**
-   ```bash
-   flutter packages pub run build_runner build
-   ```
-   
-   **Note** : Cette commande génère les adaptateurs Hive et les providers Riverpod. Elle doit être exécutée après chaque modification des modèles.
+# Installer les dépendances
+flutter pub get
 
-4. **Lancer l'application**
-   ```bash
-   flutter run
-   ```
+# Générer le code Hive
+flutter packages pub run build_runner build
+
+# Lancer l'application
+flutter run
+```
+
+## 📱 Utilisation
+
+### 1. Créer une instance
+
+- Créez une instance principale (ex: "École ABC" ou "Entreprise XYZ")
+
+### 2. Créer une sub-instance
+
+- Créez une sub-instance (ex: "Classe 3ème A" ou "Département Marketing")
+
+### 3. Ajouter des personnes
+
+- Choisissez le type : Étudiant ou Employé
+- Remplissez les informations requises
+- Prenez ou sélectionnez une photo
+- Validez et enregistrez
+
+### 4. Gérer et filtrer
+
+- Consultez la liste des personnes
+- Filtrez par type
+- Modifiez ou supprimez des entrées
+- Exportez les données
 
 ## 🔧 Configuration
 
-### Permissions Android
-L'application nécessite les permissions suivantes dans `android/app/src/main/AndroidManifest.xml` :
-- `CAMERA` : Pour prendre des photos
-- `READ_EXTERNAL_STORAGE` : Pour accéder à la galerie
-- `WRITE_EXTERNAL_STORAGE` : Pour sauvegarder les photos
+### Génération de code
 
-### Permissions iOS
-Dans `ios/Runner/Info.plist` :
-- `NSCameraUsageDescription` : Description de l'utilisation de la caméra
-- `NSPhotoLibraryUsageDescription` : Description de l'utilisation de la galerie
-
-## 📊 Structure de la Base de Données
-
-### Modèles Hive
-
-#### Instance
-```dart
-class Instance {
-  int id;
-  String nom;
-  DateTime dateCreation;
-  String? description;
-}
-```
-
-#### SubInstance
-```dart
-class SubInstance {
-  int id;
-  int instanceId;  // Référence vers Instance
-  String nom;
-  DateTime dateCreation;
-  String? description;
-}
-```
-
-#### Person
-```dart
-class Person {
-  int id;
-  int subInstanceId;  // Référence vers SubInstance
-  String nom;
-  String prenom;
-  String contact;
-  String? photoPath;  // Chemin local de la photo
-  DateTime dateCreation;
-  String? notes;
-}
-```
-
-## 🎯 Utilisation
-
-### Créer une Instance
-1. Sur la page d'accueil, appuyer sur le bouton "+"
-2. Remplir le nom et la description (optionnelle)
-3. Valider la création
-
-### Ajouter une Sous-Instance
-1. Cliquer sur une instance pour accéder à ses sous-instances
-2. Appuyer sur le bouton "+"
-3. Remplir le nom et la description
-4. Valider la création
-
-### Enregistrer une Personne
-1. Cliquer sur une sous-instance pour accéder à ses personnes
-2. Appuyer sur le bouton "+"
-3. Suivre les étapes du formulaire :
-   - **Étape 1** : Informations personnelles (nom, prénom)
-   - **Étape 2** : Contact et notes
-   - **Étape 3** : Photo (caméra ou galerie)
-   - **Étape 4** : Résumé et validation
-
-### Exporter les Données
-1. Utiliser le bouton d'export (📥) dans la barre d'action
-2. Choisir le format (JSON ou CSV)
-3. Sélectionner la portée (global, par instance, par sous-instance)
-4. Les fichiers sont sauvegardés dans le dossier d'export de l'application
-
-## 🚀 Déploiement
-
-### Build de Production
 ```bash
-# Android
-flutter build apk --release
+# Générer les adaptateurs Hive
+flutter packages pub run build_runner build
 
-# iOS
-flutter build ios --release
+# Surveiller les changements
+flutter packages pub run build_runner watch
 ```
 
-### Configuration de Production
-- Désactiver le mode debug
-- Optimiser les images
-- Configurer les permissions appropriées
-- Tester sur appareils physiques
+### Icônes et splash screen
 
-## 🐛 Dépannage
-
-### Problèmes Courants
-
-#### Erreur "Target of URI hasn't been generated"
-**Solution** : Exécuter `flutter packages pub run build_runner build`
-
-#### Erreur "Hive adapter not found"
-**Solution** : Vérifier que les adaptateurs sont bien enregistrés dans `main.dart`
-
-#### Photos qui ne s'affichent pas
-**Solution** : Vérifier les permissions de stockage et les chemins d'accès
-
-#### Erreur de navigation
-**Solution** : Vérifier la configuration de GoRouter dans `app_router.dart`
-
-### Logs et Debug
 ```bash
-# Activer les logs détaillés
-flutter run --verbose
+# Générer les icônes
+flutter packages pub run flutter_launcher_icons:main
 
-# Analyser le code
-flutter analyze
-
-# Nettoyer le projet
-flutter clean
-flutter pub get
+# Générer le splash screen
+flutter packages pub run flutter_native_splash:create
 ```
+
+## 📁 Structure du projet
+
+```
+lib/
+├── core/
+│   ├── constants/          # Constantes de l'application
+│   ├── navigation/         # Configuration du routeur
+│   ├── providers/          # Providers Riverpod
+│   ├── services/           # Services (export, image, etc.)
+│   ├── theme/              # Thèmes et styles
+│   └── pages/              # Pages communes
+├── features/
+│   ├── instances/          # Gestion des instances
+│   ├── sub_instances/      # Gestion des sub-instances
+│   └── persons/            # Gestion des personnes
+│       ├── models/         # Modèles de données
+│       ├── repositories/   # Accès aux données
+│       └── presentation/   # Interface utilisateur
+└── main.dart               # Point d'entrée
+```
+
+## 🎨 Personnalisation
+
+### Couleurs
+
+- **Étudiants** : Vert (#4CAF50)
+- **Employés** : Bleu (#2196F3)
+- **Thème principal** : Rouge (#CA1B49)
+
+### Thèmes
+
+- Support des thèmes clair et sombre
+- Adaptation automatique selon les préférences système
+
+## 📋 Fonctionnalités à venir
+
+- [ ] Synchronisation cloud
+- [ ] Gestion des groupes
+- [ ] Statistiques et rapports
+- [ ] Notifications push
+- [ ] Support multi-langues
 
 ## 🤝 Contribution
 
-### Guidelines
-1. Suivre l'architecture feature-first
-2. Utiliser les conventions de nommage Dart/Flutter
-3. Ajouter des tests pour les nouvelles fonctionnalités
-4. Documenter le code avec des commentaires clairs
+Les contributions sont les bienvenues ! N'hésitez pas à :
 
-### Workflow
-1. Créer une branche pour la fonctionnalité
-2. Développer et tester
-3. Créer une pull request
-4. Code review et merge
+- Signaler des bugs
+- Proposer des améliorations
+- Soumettre des pull requests
 
 ## 📄 Licence
 
-Ce projet est sous licence [MIT](LICENSE).
-
-## 📞 Support
-
-Pour toute question ou problème :
-- Créer une issue sur GitHub
-- Consulter la documentation Flutter
-- Vérifier les logs de l'application
+Ce projet est sous licence privée. Tous droits réservés.
 
 ---
 
-**Développé avec ❤️ en Flutter**
-"# Quick-ID" 
+**Quick-ID** - Gestion intelligente des identités 🚀

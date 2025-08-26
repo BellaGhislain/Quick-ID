@@ -22,6 +22,7 @@ class PersonsPage extends ConsumerStatefulWidget {
 class _PersonsPageState extends ConsumerState<PersonsPage> {
   SubInstance? _subInstance;
   Instance? _instance;
+  PersonType? _filterType;
 
   @override
   void initState() {
@@ -79,76 +80,178 @@ class _PersonsPageState extends ConsumerState<PersonsPage> {
           ),
         ],
       ),
-      body: personsAsync.when(
-        data: (persons) => persons.isEmpty
-            ? Center(
+      body: Column(
+        children: [
+          // Filter bar
+          if (_instance != null) _buildFilterBar(),
+
+          // Persons list
+          Expanded(
+            child: personsAsync.when(
+              data: (persons) {
+                final filteredPersons = _filterType != null
+                    ? persons.where((p) => p.type == _filterType).toList()
+                    : persons;
+
+                if (filteredPersons.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.people, size: 64, color: Colors.grey),
+                        const SizedBox(height: 16),
+                        Text(
+                          _filterType != null
+                              ? 'Aucun ${_filterType == PersonType.etudiant ? 'étudiant' : 'employé'} dans "${_subInstance?.nom ?? "cette sous-instance"}"'
+                              : 'Aucune personne dans "${_subInstance?.nom ?? "cette sous-instance"}"',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Appuyez sur le bouton + pour enregistrer votre première personne',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: filteredPersons.length,
+                  itemBuilder: (context, index) {
+                    final person = filteredPersons[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: PersonCard(
+                        person: person,
+                        onTap: () => _navigateToEditPerson(person),
+                        onDelete: () => _deletePerson(person),
+                      ),
+                    );
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) => Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.people, size: 64, color: Colors.grey),
+                    const Icon(Icons.error, size: 64, color: Colors.red),
                     const SizedBox(height: 16),
                     Text(
-                      'Aucune personne dans "${_subInstance?.nom ?? "cette sous-instance"}"',
-                      style: const TextStyle(fontSize: 18, color: Colors.grey),
+                      'Erreur: $error',
+                      style: const TextStyle(color: Colors.red),
                       textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Appuyez sur le bouton + pour enregistrer votre première personne',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
                     ),
                   ],
                 ),
-              )
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: persons.length,
-                itemBuilder: (context, index) {
-                  final person = persons[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: PersonCard(
-                      person: person,
-                      onEdit: () => _editPerson(person),
-                      onDelete: () => _deletePerson(person),
-                    ),
-                  );
-                },
               ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stackTrace) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(
-                'Erreur: $err',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.red),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  ref
-                      .read(
-                        personsBySubInstanceProvider(
-                          widget.subInstanceId,
-                        ).notifier,
-                      )
-                      .loadPersons();
-                },
-                child: const Text('Réessayer'),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToAddPerson(),
-        child: const Icon(Icons.add),
+        backgroundColor: const Color(0xFFCA1B49),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
+    );
+  }
+
+  Widget _buildFilterBar() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Type d\'instance: ${_instance!.nom}',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFCA1B49),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildFilterChip(
+                  'Tous',
+                  null,
+                  Icons.people,
+                  Colors.grey,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildFilterChip(
+                  'Étudiants',
+                  PersonType.etudiant,
+                  Icons.school,
+                  const Color(0xFF4CAF50),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildFilterChip(
+                  'Employés',
+                  PersonType.employe,
+                  Icons.business,
+                  const Color(0xFF2196F3),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(
+    String label,
+    PersonType? type,
+    IconData icon,
+    Color color,
+  ) {
+    final isSelected = _filterType == type;
+
+    return FilterChip(
+      label: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: isSelected ? Colors.white : color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : color,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+      selected: isSelected,
+      onSelected: (selected) {
+        setState(() {
+          _filterType = selected ? type : null;
+        });
+      },
+      backgroundColor: Colors.white,
+      selectedColor: color,
+      checkmarkColor: Colors.white,
+      side: BorderSide(color: color),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
   }
 
@@ -156,205 +259,136 @@ class _PersonsPageState extends ConsumerState<PersonsPage> {
     context.go('/add-person/${widget.subInstanceId}');
   }
 
-  void _editPerson(Person person) {
-    // Naviguer vers la page d'édition avec les données de la personne
+  void _navigateToEditPerson(Person person) {
     context.go('/edit-person/${person.id}');
   }
 
-  void _deletePerson(Person person) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmer la suppression'),
-        content: Text(
-          'Êtes-vous sûr de vouloir supprimer "${person.prenom} ${person.nom}" ?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ref
-                  .read(
-                    personsBySubInstanceProvider(widget.subInstanceId).notifier,
-                  )
-                  .deletePerson(person.id);
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Supprimer'),
-          ),
-        ],
-      ),
+  Future<void> _deletePerson(Person person) async {
+    final confirmed = await ModalService.showConfirmationDialog(
+      context,
+      title: 'Confirmer la suppression',
+      content:
+          'Êtes-vous sûr de vouloir supprimer ${person.prenom} ${person.nom} ?',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
     );
+
+    if (confirmed) {
+      try {
+        await ref.read(personRepositoryProvider).deletePerson(person.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Personne supprimée avec succès'),
+              backgroundColor: Color(0xFFCA1B49),
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erreur lors de la suppression: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   void _showExportOptions() {
-    ModalService.showBottomModal(
-      isScrollControlled: true,
-
+    showModalBottomSheet(
       context: context,
-      child: Container(
-        padding: const EdgeInsets.all(20),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle bar
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            Text(
-              'Exporter les données de "${_subInstance?.nom ?? "cette sous-instance"}"',
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFCA1B49),
-              ),
-              textAlign: TextAlign.center,
+            const Text(
+              'Exporter les données',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
-
-            _buildExportOption(
-              icon: Icons.file_download,
-              title: 'Export de la sous-instance (JSON)',
-              subtitle: 'Format JSON pour l\'intégration',
-              onTap: () {
-                Navigator.of(context).pop();
-                _exportSubInstance(ExportFormat.json);
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            _buildExportOption(
-              icon: Icons.table_chart,
-              title: 'Export de la sous-instance (CSV)',
-              subtitle: 'Format CSV pour Excel',
-              onTap: () {
-                Navigator.of(context).pop();
-                _exportSubInstance(ExportFormat.csv);
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            _buildExportOption(
-              icon: Icons.table_chart,
-              title: 'Export de la sous-instance (Excel)',
-              subtitle: 'Format Excel (.xlsx)',
-              onTap: () {
-                Navigator.of(context).pop();
-                _exportSubInstance(ExportFormat.excel);
-              },
-            ),
-
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildExportOption({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[200]!, width: 1),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: const Color(0xFFCA1B49).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: const Color(0xFFCA1B49), size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.table_chart),
+                    label: const Text('CSV'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _exportData('csv');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFCA1B49),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.table_view),
+                    label: const Text('Excel'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _exportData('excel');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFCA1B49),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Icon(Icons.arrow_forward_ios, color: Colors.grey[400], size: 16),
           ],
         ),
       ),
     );
   }
 
-  void _exportSubInstance(ExportFormat format) async {
+  Future<void> _exportData(String format) async {
     try {
-      final personsAsync = ref.read(
-        personsBySubInstanceProvider(widget.subInstanceId),
-      );
+      final persons = await ref
+          .read(personRepositoryProvider)
+          .getPersonsBySubInstance(widget.subInstanceId);
 
-      if (personsAsync.hasValue) {
-        final persons = personsAsync.value!.map((e) => e.toJson()).toList();
+      final filteredPersons = _filterType != null
+          ? persons.where((p) => p.type == _filterType).toList()
+          : persons;
 
-        final filePath = await ExportService.exportSubInstance(
-          persons: persons,
-          format: format,
-          instanceName: _instance?.nom ?? 'instance',
-          subInstanceName: _subInstance?.nom ?? 'sous-instance',
-        );
-
-        if (mounted && filePath != null) {
+      if (filteredPersons.isEmpty) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Export ${format.name.toUpperCase()} réussi !\nFichier sauvegardé: ${filePath.split('/').last}',
-              ),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 4),
-              action: SnackBarAction(
-                label: 'OK',
-                textColor: Colors.white,
-                onPressed: () {},
-              ),
+            const SnackBar(
+              content: Text('Aucune donnée à exporter'),
+              backgroundColor: Colors.orange,
             ),
           );
-        } else {
-          throw Exception('Erreur lors de la sauvegarde du fichier');
         }
+        return;
+      }
+
+      final fileName =
+          '${_subInstance?.nom ?? 'personnes'}_${DateTime.now().millisecondsSinceEpoch}';
+
+      if (format == 'csv') {
+        await ExportService.exportToCsv(filteredPersons, fileName);
       } else {
-        throw Exception('Données non disponibles');
+        await ExportService.exportToExcel(filteredPersons, fileName);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Données exportées en $format avec succès'),
+            backgroundColor: const Color(0xFFCA1B49),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -362,7 +396,6 @@ class _PersonsPageState extends ConsumerState<PersonsPage> {
           SnackBar(
             content: Text('Erreur lors de l\'export: $e'),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
           ),
         );
       }

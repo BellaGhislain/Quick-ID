@@ -5,9 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../sub_instances/models/sub_instance.dart';
 import '../../models/person.dart';
-import '../widgets/personal_info_step.dart';
-import '../widgets/photo_step.dart';
-import '../widgets/summary_step.dart';
 
 class EditPersonPage extends ConsumerStatefulWidget {
   final int personId;
@@ -70,11 +67,11 @@ class _EditPersonPageState extends ConsumerState<EditPersonPage> {
           _person = person;
           _nomController.text = person.nom;
           _prenomController.text = person.prenom;
-          _structureController.text = person.structure;
-          _fonctionController.text = person.fonction;
+          _structureController.text = person.structure ?? '';
+          _fonctionController.text = person.fonction ?? '';
           _matriculeController.text = person.matricule;
-          _niveauController.text = person.niveau;
-          _filiereController.text = person.filiere;
+          _niveauController.text = person.niveau ?? '';
+          _filiereController.text = person.filiere ?? '';
           _photoPath = person.photoPath;
         });
 
@@ -115,19 +112,21 @@ class _EditPersonPageState extends ConsumerState<EditPersonPage> {
     if (_person == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Quick ID - Personne non trouvée'),
+          title: const Text('Personne non trouvée'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => context.go('/'),
           ),
         ),
-        body: const Center(child: Text('Personne non trouvée')),
+        body: const Center(child: Text('La personne demandée n\'existe pas.')),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Quick ID - Modifier ${_person!.prenom} ${_person!.nom}'),
+        title: Text(
+          'Quick ID - Modifier un ${_person!.typeDisplayName} - ${_subInstance?.nom ?? ''}',
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/persons/${_person!.subInstanceId}'),
@@ -176,48 +175,17 @@ class _EditPersonPageState extends ConsumerState<EditPersonPage> {
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                // Step 1: Personal Info
                 SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
-                  child: PersonalInfoStep(
-                    nomController: _nomController,
-                    prenomController: _prenomController,
-                    structureController: _structureController,
-                    fonctionController: _fonctionController,
-                    matriculeController: _matriculeController,
-                    niveauController: _niveauController,
-                    filiereController: _filiereController,
-                  ),
+                  child: _personalInfoStep(),
                 ),
-
-                // Step 2: Photo
                 SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
-                  child: PhotoStep(
-                    photoPath: _photoPath,
-                    onPhotoSelected: (path) {
-                      setState(() {
-                        _photoPath = path;
-                      });
-                    },
-                    nom: _nomController.text,
-                    prenom: _prenomController.text,
-                  ),
+                  child: _photoStep(),
                 ),
-
-                // Step 3: Summary
                 SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
-                  child: SummaryStep(
-                    nom: _nomController.text,
-                    prenom: _prenomController.text,
-                    structure: _structureController.text,
-                    fonction: _fonctionController.text,
-                    matricule: _matriculeController.text,
-                    niveau: _niveauController.text,
-                    filiere: _filiereController.text,
-                    photoPath: _photoPath,
-                  ),
+                  child: _summaryStep(),
                 ),
               ],
             ),
@@ -265,13 +233,171 @@ class _EditPersonPageState extends ConsumerState<EditPersonPage> {
                               ),
                             ),
                           )
-                        : Text(_currentStep == 2 ? 'Modifier' : 'Suivant'),
+                        : Text(_currentStep == 2 ? 'Enregistrer' : 'Suivant'),
                   ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // --- PERSONAL INFO STEP ---
+  Widget _personalInfoStep() {
+    if (_person!.isEtudiant) {
+      return _buildStudentForm();
+    } else {
+      return _buildEmployeeForm();
+    }
+  }
+
+  Widget _buildStudentForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildField('Nom', _nomController),
+        _buildField('Prénom', _prenomController),
+        _buildField('Matricule', _matriculeController),
+        _buildField('Niveau', _niveauController, isReadOnly: true),
+        _buildField('Filière', _filiereController),
+      ],
+    );
+  }
+
+  Widget _buildEmployeeForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildField('Nom', _nomController),
+        _buildField('Prénom', _prenomController),
+        _buildField('Structure', _structureController, isReadOnly: true),
+        _buildField('Fonction', _fonctionController),
+        _buildField('Matricule', _matriculeController),
+      ],
+    );
+  }
+
+  Widget _buildField(
+    String label,
+    TextEditingController controller, {
+    bool isReadOnly = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextFormField(
+        controller: controller,
+        readOnly: isReadOnly,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          filled: isReadOnly,
+          fillColor: isReadOnly ? Colors.grey[100] : null,
+        ),
+      ),
+    );
+  }
+
+  // --- PHOTO STEP ---
+  Widget _photoStep() {
+    return Column(
+      children: [
+        _photoPath != null
+            ? Image.file(
+                File(_photoPath!),
+                width: 200,
+                height: 200,
+                fit: BoxFit.cover,
+              )
+            : const SizedBox(
+                width: 200,
+                height: 200,
+                child: Icon(Icons.person, size: 100, color: Colors.grey),
+              ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.camera_alt),
+                label: const Text('Prendre une photo'),
+                onPressed: () async {
+                  // Implémentation de la prise de photo
+                },
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.photo),
+                label: const Text('Choisir depuis la galerie'),
+                onPressed: () async {
+                  // Implémentation de la sélection depuis la galerie
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // --- SUMMARY STEP ---
+  Widget _summaryStep() {
+    if (_person!.isEtudiant) {
+      return Column(
+        children: [
+          _summaryCard('Nom', _nomController.text),
+          _summaryCard('Prénom', _prenomController.text),
+          _summaryCard('Matricule', _matriculeController.text),
+          _summaryCard('Niveau', _niveauController.text),
+          _summaryCard('Filière', _filiereController.text),
+          if (_photoPath != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Image.file(
+                File(_photoPath!),
+                width: 200,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
+            ),
+        ],
+      );
+    } else {
+      return Column(
+        children: [
+          _summaryCard('Nom', _nomController.text),
+          _summaryCard('Prénom', _prenomController.text),
+          _summaryCard('Structure', _structureController.text),
+          _summaryCard('Fonction', _fonctionController.text),
+          _summaryCard('Matricule', _matriculeController.text),
+          if (_photoPath != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Image.file(
+                File(_photoPath!),
+                width: 200,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
+            ),
+        ],
+      );
+    }
+  }
+
+  Widget _summaryCard(String label, String value) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: ListTile(
+        title: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(value),
       ),
     );
   }
@@ -289,7 +415,7 @@ class _EditPersonPageState extends ConsumerState<EditPersonPage> {
             color: isCompleted
                 ? const Color(0xFFCA1B49)
                 : isActive
-                ? const Color(0xFFCA1B49).withValues(alpha: 0.2)
+                ? const Color(0xFFCA1B49).withOpacity(0.2)
                 : Colors.grey[300],
             borderRadius: BorderRadius.circular(20),
           ),
@@ -316,9 +442,9 @@ class _EditPersonPageState extends ConsumerState<EditPersonPage> {
     );
   }
 
-  void _nextStep() {
+  void _nextStep() async {
     if (_currentStep < 2) {
-      if (_validateCurrentStep()) {
+      if (await _validateCurrentStep()) {
         setState(() {
           _currentStep++;
         });
@@ -328,7 +454,7 @@ class _EditPersonPageState extends ConsumerState<EditPersonPage> {
         );
       }
     } else {
-      _updatePerson();
+      _savePerson();
     }
   }
 
@@ -344,28 +470,38 @@ class _EditPersonPageState extends ConsumerState<EditPersonPage> {
     }
   }
 
-  bool _validateCurrentStep() {
+  Future<bool> _validateCurrentStep() async {
     switch (_currentStep) {
       case 0:
-        // Valider les informations personnelles
-        if (_nomController.text.trim().isEmpty ||
-            _prenomController.text.trim().isEmpty ||
-            _structureController.text.trim().isEmpty ||
-            _fonctionController.text.trim().isEmpty ||
-            _matriculeController.text.trim().isEmpty ||
-            _niveauController.text.trim().isEmpty ||
-            _filiereController.text.trim().isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Veuillez remplir tous les champs obligatoires'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return false;
+        if (_person!.isEtudiant) {
+          if (_nomController.text.trim().isEmpty ||
+              _prenomController.text.trim().isEmpty ||
+              _matriculeController.text.trim().isEmpty ||
+              _filiereController.text.trim().isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Veuillez remplir tous les champs obligatoires'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return false;
+          }
+        } else {
+          if (_nomController.text.trim().isEmpty ||
+              _prenomController.text.trim().isEmpty ||
+              _fonctionController.text.trim().isEmpty ||
+              _matriculeController.text.trim().isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Veuillez remplir tous les champs obligatoires'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return false;
+          }
         }
         break;
       case 1:
-        // Valider la photo
         if (_photoPath == null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -380,22 +516,20 @@ class _EditPersonPageState extends ConsumerState<EditPersonPage> {
     return true;
   }
 
-  Future<void> _updatePerson() async {
-    if (!_validateCurrentStep() || _person == null) return;
+  Future<void> _savePerson() async {
+    if (!await _validateCurrentStep()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final updatedPerson = _person!.copyWith(
         nom: _nomController.text.trim(),
         prenom: _prenomController.text.trim(),
-        structure: _structureController.text.trim(),
-        fonction: _fonctionController.text.trim(),
+        structure: _person!.isEmploye ? _structureController.text.trim() : null,
+        fonction: _person!.isEmploye ? _fonctionController.text.trim() : null,
         matricule: _matriculeController.text.trim(),
-        niveau: _niveauController.text.trim(),
-        filiere: _filiereController.text.trim(),
+        niveau: _person!.isEtudiant ? _niveauController.text.trim() : null,
+        filiere: _person!.isEtudiant ? _filiereController.text.trim() : null,
         photoPath: _photoPath!,
       );
 
@@ -420,11 +554,7 @@ class _EditPersonPageState extends ConsumerState<EditPersonPage> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 }
