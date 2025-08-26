@@ -59,8 +59,8 @@ class Person extends HiveObject {
     this.filiere,
     required this.photoPath,
     required this.dateCreation,
-    required this.type,
-  });
+    PersonType? type,
+  }) : type = type ?? PersonType.etudiant;
 
   Person copyWith({
     int? id,
@@ -122,10 +122,12 @@ class Person extends HiveObject {
       filiere: json['filiere'] as String?,
       photoPath: json['photoPath'] as String,
       dateCreation: DateTime.parse(json['dateCreation'] as String),
-      type: PersonType.values.firstWhere(
-        (e) => e.name == json['type'],
-        orElse: () => PersonType.etudiant,
-      ),
+      type: json.containsKey('type')
+          ? PersonType.values.firstWhere(
+              (e) => e.name == json['type'],
+              orElse: () => PersonType.etudiant,
+            )
+          : null, // Utilisera la valeur par défaut du constructeur
     );
   }
 
