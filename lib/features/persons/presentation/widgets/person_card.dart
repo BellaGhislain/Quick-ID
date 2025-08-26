@@ -37,11 +37,11 @@ class PersonCard extends StatelessWidget {
                   width: 50,
                   height: 50,
                   child: FutureBuilder<bool>(
-                    future: ImageService.imageExists(person.photoPath),
+                    future: ImageService.imageExists(person.safePhotoPath),
                     builder: (context, snapshot) {
                       if (snapshot.hasData && snapshot.data == true) {
                         return Image.file(
-                          File(person.photoPath),
+                          File(person.safePhotoPath),
                           fit: BoxFit.cover,
                           errorBuilder: (context, err, stackTrace) {
                             return _buildPlaceholderIcon();
@@ -119,7 +119,7 @@ class PersonCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            'Créé le ${DateFormat('dd/MM/yyyy').format(person.dateCreation)}',
+                            'Créé le ${DateFormat('dd/MM/yyyy').format(person.safeDateCreation)}',
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(color: Colors.grey[600]),
                           ),
