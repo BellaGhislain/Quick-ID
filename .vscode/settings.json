@@ -1,0 +1,38 @@
+{
+  "dart.flutterSdkPath": null,
+  "dart.sdkPath": null,
+  "dart.lineLength": 80,
+  "dart.enableSdkFormatter": true,
+  "dart.enableLint": true,
+  "dart.lintRules": [
+    "prefer_single_quotes",
+    "prefer_const_constructors",
+    "prefer_const_literals_to_create_immutables",
+    "avoid_print",
+    "prefer_final_fields",
+    "prefer_final_locals"
+  ],
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "files.associations": {
+    "*.dart": "dart"
+  },
+  "dart.previewFlutterUiGuides": true,
+  "dart.previewFlutterUiGuidesCustomTracking": true,
+  "dart.closingLabels": true,
+  "dart.showInspectorNotificationsForWidgetErrors": true,
+  "dart.analyzerPath": null,
+  "dart.analyzerAdditionalArgs": [],
+  "dart.analyzerVmOptions": [],
+  "dart.checkForSdkUpdates": false,
+  "dart.sdkPaths": [],
+  "dart.flutterSdkPaths": [],
+  "dart.workspaceSymbols": "off",
+  "dart.completeFunctionCalls": true,
+  "dart.suggestFromUnimportedLibraries": true,
+  "dart.previewHotReloadOnSave": false
+}

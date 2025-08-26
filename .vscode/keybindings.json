@@ -1,0 +1,27 @@
+[
+    {
+        "key": "ctrl+shift+b",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Flutter: build_runner build"
+    },
+    {
+        "key": "ctrl+shift+w",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Flutter: build_runner watch"
+    },
+    {
+        "key": "ctrl+shift+a",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Flutter: analyze"
+    },
+    {
+        "key": "ctrl+shift+t",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Flutter: test"
+    },
+    {
+        "key": "ctrl+shift+c",
+        "command": "workbench.action.tasks.runTask",
+        "args": "Flutter: clean"
+    }
+]

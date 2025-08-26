@@ -1,0 +1,171 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Flutter: pub get",
+			"type": "shell",
+			"command": "flutter",
+			"args": [
+				"pub",
+				"get"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Flutter: build_runner build",
+			"type": "shell",
+			"command": "flutter",
+			"args": [
+				"packages",
+				"pub",
+				"run",
+				"build_runner",
+				"build"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Flutter: build_runner watch",
+			"type": "shell",
+			"command": "flutter",
+			"args": [
+				"packages",
+				"pub",
+				"run",
+				"build_runner",
+				"watch"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Flutter: clean",
+			"type": "shell",
+			"command": "flutter",
+			"args": [
+				"clean"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Flutter: analyze",
+			"type": "shell",
+			"command": "flutter",
+			"args": [
+				"analyze"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Flutter: test",
+			"type": "shell",
+			"command": "flutter",
+			"args": [
+				"test"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Build: Full Project (PowerShell)",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-ExecutionPolicy",
+				"Bypass",
+				"-File",
+				"scripts/build.ps1"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Build: Full Project (Bash)",
+			"type": "shell",
+			"command": "bash",
+			"args": [
+				"scripts/build.sh"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared",
+				"showReuseMessage": true,
+				"clear": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Flutter: analyze",
+			"type": "shell",
+			"command": "flutter",
+			"args": [
+				"analyze"
+			],
+			"group": "build"
+		}
+	]
+}

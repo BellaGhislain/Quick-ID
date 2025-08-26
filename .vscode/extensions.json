@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "Dart-Code.dart-code",
+    "Dart-Code.flutter",
+    "ms-vscode.vscode-json",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    "ms-vscode.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-git-graph",
+    "ms-vscode.vscode-gitlens"
+  ]
+}

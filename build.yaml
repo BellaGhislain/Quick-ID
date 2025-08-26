@@ -1,0 +1,18 @@
+targets:
+  $default:
+    builders:
+      hive_generator|hive_generator:
+        generate_for:
+          - lib/features/instances/models/**.dart
+          - lib/features/sub_instances/models/**.dart
+          - lib/features/persons/models/**.dart
+        options:
+          # Configuration pour Hive
+          generate_adapter: true
+          generate_field_keys: true
+      riverpod_generator|riverpod_generator:
+        generate_for:
+          - lib/core/providers/**.dart
+        options:
+          # Configuration pour Riverpod
+          provider_name_suffix: "Provider"
